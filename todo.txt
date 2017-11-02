@@ -1,0 +1,10 @@
+modules have students through groups
+modules have tas through groups
+to randomize groups
+- shuffle array split array into = parts
+- create a group
+- add ta to group
+
+mark modules active / inactive
+genearte groups button
+some type of view page for the course
