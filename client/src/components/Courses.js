@@ -92,7 +92,8 @@ class Courses extends React.Component {
           else
             return course
         })
-        this.setState({ courses });
+        let activeCourse = this.state.activeCourse.id === res.data.id ? res.data : {}
+        this.setState({ courses, activeCourse  });
       })
       .catch( error => {
         this.props.dispatch(setFlash('Error Updating Module. Try Again.', 'red'));
