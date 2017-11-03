@@ -177,15 +177,15 @@ class Courses extends React.Component {
   displayGroups = () => {
     return this.state.activeCourse.modules.filter( m => m.active ).map(mod => {
       return(
-        <List divided>
+        <List key={mod.id} divided>
           <List.Header as='h1'>{mod.name}</List.Header>
           { mod.groups.map(group => {
             const ta = group.ta || {}
             return(
-              <List.Item>
+              <List.Item key={group.id}>
                  <Header as='h3'>{ta.name}</Header>
                  { group.students.map(student => (
-                   <div>{student.name}</div>
+                   <div key={student.id}>{student.name}</div>
                  ))
                }
               </List.Item>
