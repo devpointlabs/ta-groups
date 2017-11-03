@@ -1,7 +1,15 @@
 Rails.application.routes.draw do
   mount_devise_token_auth_for 'User', at: 'api/auth'
+
   namespace :api do
-    resources :courses, only: [:index, :create, :update, :destroy]
+    # Courses Routes
+    get 'courses', to: 'courses#index'
+    post 'courses', to: 'courses#create'
+    put 'courses/:id/generate_groups', to: 'courses#generate_groups'
+    delete 'courses/:id', to: 'courses#destroy'
+
+    # Modules Routes
+    put 'courses/:course_id/modules/:id', to: 'modules#update'
   end
 
   #Do not place any routes below this one

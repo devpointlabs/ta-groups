@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171102205659) do
+ActiveRecord::Schema.define(version: 20171102235946) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,15 @@ ActiveRecord::Schema.define(version: 20171102205659) do
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "groups", force: :cascade do |t|
+    t.jsonb "ta"
+    t.jsonb "students"
+    t.bigint "mod_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["mod_id"], name: "index_groups_on_mod_id"
   end
 
   create_table "mods", force: :cascade do |t|
@@ -75,13 +84,14 @@ ActiveRecord::Schema.define(version: 20171102205659) do
     t.json "tokens"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "role", default: "ta"
+    t.string "role", default: "user"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
 
+  add_foreign_key "groups", "mods"
   add_foreign_key "mods", "courses"
   add_foreign_key "students", "courses"
   add_foreign_key "teaching_assistants", "courses"
