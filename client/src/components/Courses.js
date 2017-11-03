@@ -20,7 +20,7 @@ class Courses extends React.Component {
   state = {
     courseId: '',
     courses: [],
-    accordion: { active: null, null: null },
+    accordion: { active: null, index: null },
     activeCourse: null,
     loginRedirect: false,
   }
@@ -36,7 +36,12 @@ class Courses extends React.Component {
     } else {
       axios.get('/api/courses.json')
         .then( res => {
-          this.setState({ courses: res.data });
+          this.setState({ courses: res.data }, () => {
+            const courses = this.state.courses;
+
+            if(courses.length)
+              this.setState({ activeCourse: courses[0], accordion: { active: true, index: 0 }})
+          });
         })
         .catch( res => {
           dispatch(setFlash('Error Loading Courses. Try Again.', 'red'));
@@ -55,7 +60,6 @@ class Courses extends React.Component {
 
     axios.post(`/api/courses?course_id=${courseId}`)
       .then( res => {
-        console.log(res)
         this.setState({ courses: [...courses, res.data], courseId: '' });
       })
       .catch( res => {
@@ -90,12 +94,18 @@ class Courses extends React.Component {
   }
 
   displayModules = (course) => {
-    return course.modules.map(module => {
+    const { user: { role } } = this.props;
+    let modules = course.modules;
+    modules = role === 'admin' ? modules : modules.filter(m => m.active)
+
+    return modules.map(module => {
       return(
         <List.Item key={module.id}>
-          <List.Content floated='right'>
-           <Checkbox onChange={(e, data) => this.handleCheck(course.id, module.id, data) } checked={module.active} />
-          </List.Content>
+          {role === 'admin' &&
+            <List.Content floated='right'>
+             <Checkbox onChange={(e, data) => this.handleCheck(course.id, module.id, data) } checked={module.active} />
+            </List.Content>
+          }
           <List.Content>
             {module.name}
           </List.Content>
