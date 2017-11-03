@@ -52,9 +52,9 @@ class Api::CoursesController < ApplicationController
     students = @course.students
     modules.each do |mod|
       tas = @course.teaching_assistants.shuffle
-      groups = students.shuffle.each_slice( (students.size / tas.size.to_f).ceil ).to_a
+      groups = students.shuffle.in_groups( students.size.quo(students.size / tas.size.to_f).ceil)
       groups.each_with_index do |group, index|
-        mod.groups.create(ta: tas[index], students: group)
+        mod.groups.create(ta: tas[index], students: group.compact)
       end
     end
     @course.reload
