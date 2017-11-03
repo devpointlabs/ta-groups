@@ -55,12 +55,18 @@ class Courses extends React.Component {
   addCourse = (e) => {
     e.preventDefault();
     const { courses, courseId } = this.state;
+    let { accordion, activeCourse } = this.state;
     const { setLoading } = this.props;
     setLoading(true);
 
     axios.post(`/api/courses?course_id=${courseId}`)
       .then( res => {
-        this.setState({ courses: [...courses, res.data], courseId: '' });
+        if (!courses.length) {
+          activeCourse = res.data
+          accordion = { active: true, index: 0 }
+        }
+          
+        this.setState({ courses: [...courses, res.data], courseId: '', activeCourse, accordion });
       })
       .catch( res => {
         this.props.dispatch(setFlash('Error Adding Course. Try Again', 'red'));
