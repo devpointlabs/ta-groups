@@ -11,6 +11,7 @@ import {
   Segment,
   Grid,
   Button,
+  Image,
 } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { setFlash } from '../actions/flash';
@@ -191,8 +192,13 @@ class Courses extends React.Component {
             return(
               <List.Item key={group.id}>
                  <Header as='h3'>{ta.name}</Header>
+                 <Image src={ta.avatar} avatar size="tiny" />
                  { group.students.map(student => (
-                   <div key={student.id}>{student.name}</div>
+                   <div key={student.id}>
+                     {student.name}
+                     <br />
+                     <Image src={student.avatar} avatar size="tiny" />
+                   </div>
                  ))
                }
               </List.Item>
