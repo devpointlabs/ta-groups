@@ -23,6 +23,9 @@ class NavBar extends Component {
         <Link to='/login'>
           <Menu.Item name='Login' />
         </Link>
+        <Link to='/Register'>
+          <Menu.Item name='Register' />
+        </Link>
       </Menu.Menu>
     );
   }

@@ -28,9 +28,14 @@ class Api::CoursesController < ApplicationController
       #GET COURSE STUDENTS
       url = "#{ENV['BASE_URL']}/courses/#{course_id}/users?per_page=100"
       res = HTTParty.get(url, headers: auth, query: { include: ['avatar_url'], enrollment_role: 'StudentEnrollment' })
-      students = res.parsed_response.map { |u| { name: u['name'], avatar: u['avatar_url'], id: u['id'] }}
+      students = res.parsed_response.map { |u| { name: u['name'], email: u['login_id'], avatar: u['avatar_url'], id: u['id'] }}
       students.each do |student|
-        @course.students.create( name: student[:name], avatar: student[:avatar], canvas_id: student[:id] )
+        @course.students.create( 
+          name: student[:name], 
+          avatar: student[:avatar], 
+          canvas_id: student[:id],
+          email: student[:email]
+        )
       end
 
       #GET COURSE TA's
