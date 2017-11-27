@@ -12,6 +12,7 @@ import {
   Grid, 
   Button,
   Image,
+  Card,
 } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { setFlash } from '../actions/flash';
@@ -182,12 +183,52 @@ class Courses extends React.Component {
     }
   }
 
+  visibleGroups = (groups) => {
+    const { user = {} } = this.props;
+    switch(user.role) {
+      case 'admin':
+        return groups;
+      case 'ta':
+        return groups.filter( g => g.ta.user_id === user.id)
+      case 'user':
+        return groups.filter( g => g.students.find( s => s.user_id === user.id ) )
+      default:
+        return []
+    }
+  }
+
   displayGroups = () => {
     return this.state.activeCourse.modules.filter( m => m.active ).map(mod => {
+      const groups = this.visibleGroups(mod.groups)
       return(
-        <List key={mod.id} divided>
+        <Segment key={mod.id}>
+          <Header as="h3">{mod.name}</Header>
+          { groups.map( group => {
+              const ta = group.ta || {}
+              return (
+                <div>
+                  <Header as="h5">{ta.name}</Header>
+                  <Card.Group itemsPerRow={5}>
+                    { group.students.map( student =>
+                        <Card key={student.id}>
+                          <Image src={student.avatar} circular size="big" />
+                          <Card.Content>
+                            <Card.Header>
+                              { student.name }
+                            </Card.Header>
+                          </Card.Content>
+                        </Card>
+                      )
+                    }
+                  </Card.Group>
+                </div>
+              )
+            })
+          }
+
+        {/*<List key={mod.id} divided>
           <List.Header as='h1'>{mod.name}</List.Header>
-          { mod.groups.map(group => {
+          { groups.map(group => {
             const ta = group.ta || {}
             return(
               <List.Item key={group.id}>
@@ -204,7 +245,8 @@ class Courses extends React.Component {
             )
           })
         }
-        </List>
+        </List>*/}
+        </Segment>
       )
     })
   }
@@ -259,6 +301,8 @@ class Courses extends React.Component {
   }
 
   render() {
+    const { user = {} } = this.props
+    const colSize = user.role === 'user' ? 16 : 8
     if(this.state.loginRedirect)
       return(<Redirect to='/login' />)
     else {
@@ -267,14 +311,16 @@ class Courses extends React.Component {
           { this.addCourseForm() }
           <Grid>
             <Grid.Row>
-              <Grid.Column width={8}>
-                <Segment style={styles.column}>
-                  <Accordion>
-                    { this.displayCourses() }
-                  </Accordion>
-                </Segment>
-              </Grid.Column>
-              <Grid.Column width={8}>
+              { user.role !== 'user' &&
+                <Grid.Column width={8}>
+                  <Segment style={styles.column}>
+                    <Accordion>
+                      { this.displayCourses() }
+                    </Accordion>
+                  </Segment>
+                </Grid.Column>
+              }
+              <Grid.Column width={colSize}>
                 <Segment style={styles.column}>
                   { this.courseDisplay() }
                 </Segment>

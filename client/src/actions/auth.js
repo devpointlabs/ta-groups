@@ -25,6 +25,13 @@ export const registerUser = (email, password, passwordConfirmation, history) => 
           res.response.data.errors.full_messages.map(message =>
             <div>{message}</div>);
         const { headers } = res;
+        if (!messages.length) {
+          messages.push(
+            <div>
+              Canvas account not found.  Please login with the same email you use for Canvas
+            </div>
+          )
+        }
         dispatch(setFlash(messages, 'red'));
         dispatch(setHeaders(headers));
       });

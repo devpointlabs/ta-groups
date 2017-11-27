@@ -1,6 +1,10 @@
 class Api::CoursesController < ApplicationController
   def index
-    @courses = Course.where(active: true)
+    if current_user.try(:role) == 'user' 
+      @courses = [current_user.student.course]
+    else
+      @courses = Course.where(active: true)
+    end
   end
 
   def create
@@ -41,9 +45,9 @@ class Api::CoursesController < ApplicationController
       #GET COURSE TA's
       url = "#{ENV['BASE_URL']}/courses/#{course_id}/users?per_page=100"
       res = HTTParty.get(url, headers: auth, query: { include: ['avatar_url'], enrollment_role: 'TaEnrollment' })
-      tas = res.parsed_response.map { |u| { name: u['name'], avatar: u['avatar_url'], id: u['id'] }}
+      tas = res.parsed_response.map { |u| { name: u['name'], avatar: u['avatar_url'], id: u['id'], email: u['login_id'] }}
       tas.each do |ta|
-        @course.teaching_assistants.create( name: ta[:name], avatar: ta[:avatar], canvas_id: ta[:id] )
+        @course.teaching_assistants.create( name: ta[:name], avatar: ta[:avatar], canvas_id: ta[:id], email: ta[:email] )
       end
 
       render 'show.json.jbuilder'
