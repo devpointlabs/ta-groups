@@ -1,4 +1,5 @@
 import React from 'react';
+import Notes from './Notes';
 import axios from 'axios';
 import {
   Form,
@@ -25,6 +26,7 @@ class Courses extends React.Component {
     accordion: { active: null, index: null },
     activeCourse: null,
     loginRedirect: false,
+    view: null,
   }
 
   componentDidMount() {
@@ -38,7 +40,8 @@ class Courses extends React.Component {
     } else {
       axios.get('/api/courses.json')
         .then( res => {
-          this.setState({ courses: res.data }, () => {
+          let view = this.setView();
+          this.setState({ courses: res.data, view }, () => {
             const courses = this.state.courses;
 
             if(courses.length)
@@ -51,6 +54,20 @@ class Courses extends React.Component {
         .then( () => {
           setLoading();
       });
+    }
+  }
+
+  setView = () => {
+    const { user: { role }} = this.props;
+    switch(role) {
+      case 'user':
+        return 'journal';
+      case 'ta':
+        return 'notes';
+      case 'admin':
+        return 'full';
+      default:
+        return null;
     }
   }
 
@@ -198,6 +215,7 @@ class Courses extends React.Component {
   }
 
   displayGroups = () => {
+    const { user: {} } = this.props;
     return this.state.activeCourse.modules.filter( m => m.active ).map(mod => {
       const groups = this.visibleGroups(mod.groups)
       return(
@@ -206,12 +224,12 @@ class Courses extends React.Component {
           { groups.map( group => {
               const ta = group.ta || {}
               return (
-                <div>
+                <div key={group.id}>
                   <Header as="h5">{ta.name}</Header>
                   <Card.Group itemsPerRow={5}>
                     { group.students.map( student =>
                         <Card key={student.id}>
-                          <Image src={student.avatar} circular size="big" />
+                          <Image src={student.avatar} size="big" />
                           <Card.Content>
                             <Card.Header>
                               { student.name }
@@ -225,27 +243,6 @@ class Courses extends React.Component {
               )
             })
           }
-
-        {/*<List key={mod.id} divided>
-          <List.Header as='h1'>{mod.name}</List.Header>
-          { groups.map(group => {
-            const ta = group.ta || {}
-            return(
-              <List.Item key={group.id}>
-                 <Header as='h3'>{ta.name}</Header>
-                 { group.students.map(student => (
-                   <div key={student.id}>
-                     {student.name}
-                     <br />
-                     <Image src={student.avatar} avatar size="tiny" />
-                   </div>
-                 ))
-               }
-              </List.Item>
-            )
-          })
-        }
-        </List>*/}
         </Segment>
       )
     })
@@ -300,9 +297,18 @@ class Courses extends React.Component {
       return(<Header as='h1' textAlign='center'>No Course Selected</Header>)
   }
 
+  displaySideCol = () => {
+    const { view, activeCourse } = this.state;
+    switch(view) {
+      case 'full':
+        return this.displayCourses() 
+      case 'notes':
+        return <Notes course={activeCourse} />
+    }
+  }
+
   render() {
     const { user = {} } = this.props
-    const colSize = user.role === 'user' ? 16 : 8
     if(this.state.loginRedirect)
       return(<Redirect to='/login' />)
     else {
@@ -311,19 +317,13 @@ class Courses extends React.Component {
           { this.addCourseForm() }
           <Grid>
             <Grid.Row>
-              { user.role !== 'user' &&
-                <Grid.Column width={8}>
-                  <Segment style={styles.column}>
-                    <Accordion>
-                      { this.displayCourses() }
-                    </Accordion>
-                  </Segment>
-                </Grid.Column>
-              }
-              <Grid.Column width={colSize}>
+              <Grid.Column width={8}>
                 <Segment style={styles.column}>
-                  { this.courseDisplay() }
+                  { this.displaySideCol() }
                 </Segment>
+              </Grid.Column>
+              <Grid.Column width={8}>
+                { this.courseDisplay() }
               </Grid.Column>
             </Grid.Row>
           </Grid>
