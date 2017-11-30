@@ -42,13 +42,13 @@ ActiveRecord::Schema.define(version: 20171128002750) do
   end
 
   create_table "notes", force: :cascade do |t|
-    t.text "content"
+    t.text "content", default: ""
     t.string "author"
-    t.bigint "group_id"
+    t.bigint "mod_id"
     t.integer "student_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["group_id"], name: "index_notes_on_group_id"
+    t.index ["mod_id"], name: "index_notes_on_mod_id"
   end
 
   create_table "students", force: :cascade do |t|
@@ -109,7 +109,7 @@ ActiveRecord::Schema.define(version: 20171128002750) do
 
   add_foreign_key "groups", "mods"
   add_foreign_key "mods", "courses"
-  add_foreign_key "notes", "groups"
+  add_foreign_key "notes", "mods"
   add_foreign_key "students", "courses"
   add_foreign_key "teaching_assistants", "courses"
 end

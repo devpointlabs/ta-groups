@@ -10,6 +10,8 @@ Rails.application.routes.draw do
 
     # Modules Routes
     put 'courses/:course_id/modules/:id', to: 'modules#update'
+
+    resources :notes, only: [:index, :update]
   end
 
   #Do not place any routes below this one

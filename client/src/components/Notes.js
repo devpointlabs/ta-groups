@@ -4,24 +4,35 @@ import {
   Form, 
   Header,
   Image,
+  Divider,
 } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { setActiveModule, setActiveStudent } from '../actions/active';
+import { setHeaders } from '../actions/headers';
+import { setFlash } from '../actions/flash';
 
 class Notes extends React.Component {
   state = {
     activeModule: {},
     activeStudent: {},
-    activeNote: null,
+    activeNote: { content: '' },
     notes: [],
     modules: [], 
     students: [],
   }
 
   componentWillReceiveProps(nextProps) {
-    const course = this.props || {}
+    const course = this.props.course || {}
+    const { activeModule, activeStudent } = this.props;
     if (nextProps.course.id !== course.id) {
       const modules = this.compileModules(nextProps.course);
       const students = this.compileStudents(nextProps.course);
       this.setState({ students, modules });
+    }
+
+    if (nextProps.activeModule.id && nextProps.activeStudent.id) {
+      if (activeModule.id !== nextProps.activeModule.id || activeStudent.id !== nextProps.activeStudent.id) 
+        this.getNotes(nextProps.activeStudent, nextProps.activeModule)
     }
   }
 
@@ -52,19 +63,38 @@ class Notes extends React.Component {
     });
   }
 
-  optionChange = (type, value, data) => {
-    this.setState({ [type]: data.find( m => m.id === value ) }, () => {
-      const { activeModule, activeStudent } = this.state;
-      if (activeModule.id && activeStudent.id) {
-        //TODO make call to get or create note
-      }
+  getNotes = (activeStudent, activeModule) => {
+    this.setState({ activeNote: { content: '' }}, () => {
+      axios.get(`/api/notes?student_id=${activeStudent.id}&module_id=${activeModule.id}`)
+        .then( ({ data, headers }) => {
+          this.props.dispatch(setHeaders(headers))
+          this.setState({ activeNote: data });
+        })
     });
   }
 
+  optionChange = (type, value, data) => {
+    const action = type === 'activeStudent' ? setActiveStudent : setActiveModule; 
+    const obj = data.find( o => o.id === value );
+    this.props.dispatch(action(obj, this.getNotes))
+  }
+
+  updateNote = (e) => {
+    e.preventDefault();
+    const { activeNote } = this.state;
+    const { dispatch } = this.props;
+    axios.put(`/api/notes/${activeNote.id}`, { note: { content: activeNote.content }})
+      .then( ({ headers }) => {
+        dispatch(setHeaders(headers));
+        dispatch(setFlash('Note Saved', 'success'));
+      })
+  }
+
   render() {
-    const { activeStudent, activeModule, modules, students } = this.state;
+    const { modules, students, activeNote } = this.state;
+    const { activeStudent, activeModule } = this.props;
     return (
-      <Form>
+      <Form onSubmit={ this.updateNote }>
         <Form.Select 
           label="Module" 
           options={this.modOptions()} 
@@ -81,9 +111,23 @@ class Notes extends React.Component {
         <Header as="h2">{activeModule.name}</Header>
         <Header as="h3">{activeStudent.name}</Header>
         <Image src={activeStudent.avatar} avatar size="small" />
+        { activeNote.id &&
+          <div>
+            <Divider />
+            <Form.TextArea 
+              value={activeNote.content} 
+              onChange={ (e) => this.setState({ activeNote: {...activeNote, content: e.target.value } }) }
+            />
+            <Form.Button>Save</Form.Button>
+          </div>
+        }
       </Form>
     )
   }
 }
 
-export default Notes;
+const mapStateToProps = (state) => {
+  return { activeModule: state.activeModule, activeStudent: state.activeStudent }
+}
+
+export default connect(mapStateToProps)(Notes);

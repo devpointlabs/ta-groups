@@ -14,10 +14,12 @@ import {
   Button,
   Image,
   Card,
+  Sticky,
 } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { setFlash } from '../actions/flash';
-import { Redirect } from 'react-router-dom';;
+import { Redirect } from 'react-router-dom';
+import { setActiveModule, setActiveStudent } from '../actions/active';
 
 class Courses extends React.Component {
   state = {
@@ -214,6 +216,14 @@ class Courses extends React.Component {
     }
   }
 
+  setActive = (module, student) => {
+    const { dispatch, user = {} } = this.props;
+    if (user.role !== 'user') {
+      dispatch(setActiveModule(module));
+      dispatch(setActiveStudent(student));
+    }
+  }
+
   displayGroups = () => {
     const { user: {} } = this.props;
     return this.state.activeCourse.modules.filter( m => m.active ).map(mod => {
@@ -228,7 +238,7 @@ class Courses extends React.Component {
                   <Header as="h5">{ta.name}</Header>
                   <Card.Group itemsPerRow={5}>
                     { group.students.map( student =>
-                        <Card key={student.id}>
+                        <Card onClick={() => this.setActive(mod, student)} key={student.id}>
                           <Image src={student.avatar} size="big" />
                           <Card.Content>
                             <Card.Header>
