@@ -9,8 +9,8 @@ import {
   Accordion,
   Icon,
   Header,
-  Segment, 
-  Grid, 
+  Segment,
+  Grid,
   Button,
   Image,
   Card,
@@ -86,7 +86,7 @@ class Courses extends React.Component {
           activeCourse = res.data
           accordion = { active: true, index: 0 }
         }
-          
+
         this.setState({ courses: [...courses, res.data], courseId: '', activeCourse, accordion });
       })
       .catch( res => {
@@ -149,7 +149,7 @@ class Courses extends React.Component {
         return(
           [
             <Accordion.Title key={course.id} active={active} index={i} onClick={(e, data) => this.handleClick(course, data)}>
-              <Icon name='dropdown' />
+              <Icon name='dropdown' size="large" />
               { course.name }
             </Accordion.Title>,
             <Accordion.Content key={i} active={(i === index && active)}>
@@ -226,6 +226,7 @@ class Courses extends React.Component {
 
   displayGroups = () => {
     const { user: {} } = this.props;
+    let maxLength = 22
     return this.state.activeCourse.modules.filter( m => m.active ).map(mod => {
       const groups = this.visibleGroups(mod.groups)
       return(
@@ -234,22 +235,22 @@ class Courses extends React.Component {
           { groups.map( group => {
               const ta = group.ta || {}
               return (
-                <div key={group.id}>
-                  <Header as="h5">{ta.name}</Header>
+                <Segment key={group.id} style={styles.group}>
+                  <Header as="h4">{ta.name}</Header>
                   <Card.Group itemsPerRow={5}>
                     { group.students.map( student =>
                         <Card onClick={() => this.setActive(mod, student)} key={student.id}>
                           <Image src={student.avatar} size="big" />
                           <Card.Content>
-                            <Card.Header>
-                              { student.name }
+                            <Card.Header style={styles.nameHeader}>
+                              { student.name.length > maxLength ? (student.name.substring(0,maxLength-3) + '...') : student.name }
                             </Card.Header>
                           </Card.Content>
                         </Card>
                       )
                     }
                   </Card.Group>
-                </div>
+                </Segment>
               )
             })
           }
@@ -311,7 +312,7 @@ class Courses extends React.Component {
     const { view, activeCourse } = this.state;
     switch(view) {
       case 'full':
-        return this.displayCourses() 
+        return this.displayCourses()
       case 'notes':
         return <Notes course={activeCourse} />
     }
@@ -327,12 +328,12 @@ class Courses extends React.Component {
           { this.addCourseForm() }
           <Grid>
             <Grid.Row>
-              <Grid.Column width={8}>
+              <Grid.Column width={6}>
                 <Segment style={styles.column}>
                   { this.displaySideCol() }
                 </Segment>
               </Grid.Column>
-              <Grid.Column width={8}>
+              <Grid.Column width={10}>
                 { this.courseDisplay() }
               </Grid.Column>
             </Grid.Row>
@@ -351,6 +352,12 @@ const styles = {
   },
   fullHeight: {
     height: '100vh',
+  },
+  nameHeader: {
+    fontSize: 14,
+  },
+  group: {
+    backgroundColor: '#ddd8d8',
   },
 }
 
